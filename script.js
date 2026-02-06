@@ -30,19 +30,45 @@ const moveNoButton = () => {
   noButton.style.left = `${x}px`;
   noButton.style.top = `${y}px`;
 
-  response.textContent = playfulNoResponses[dodgeCount % playfulNoResponses.length];
+  response.textContent =
+    playfulNoResponses[dodgeCount % playfulNoResponses.length];
   dodgeCount += 1;
 };
-
-noButton.addEventListener("mouseenter", moveNoButton);
-noButton.addEventListener("focus", moveNoButton);
-
-noButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  moveNoButton();
-});
 
 yesButton.addEventListener("click", () => {
   const message = messages[Math.floor(Math.random() * messages.length)];
   response.textContent = message;
+});
+
+// Dodge when the pointer gets close (not only when it touches the button)
+const DODGE_RADIUS_PX = 80; // increase to make it more cowardly
+
+const dodgeIfClose = (event) => {
+  const rowRect = buttonRow.getBoundingClientRect();
+  const btnRect = noButton.getBoundingClientRect();
+
+  // pointer position (works for mouse + touch + pen)
+  const px = event.clientX;
+  const py = event.clientY;
+
+  // button center
+  const bx = btnRect.left + btnRect.width / 2;
+  const by = btnRect.top + btnRect.height / 2;
+
+  const dx = px - bx;
+  const dy = py - by;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist < DODGE_RADIUS_PX) {
+    moveNoButton();
+  }
+};
+
+// Track pointer movement inside the button area container
+buttonRow.addEventListener("pointermove", dodgeIfClose);
+
+// Extra “nope” for mobile / quick clicks
+noButton.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  moveNoButton();
 });

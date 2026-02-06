@@ -57,7 +57,9 @@ h1 {
   border-radius: 999px;
   font-size: 1rem;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .btn:focus-visible {
@@ -87,6 +89,12 @@ h1 {
   font-weight: 600;
   color: #1f2937;
   min-height: 24px;
+}
+
+#no-btn {
+  transition:
+    left 0.08s ease-out,
+    top 0.08s ease-out;
 }
 
 @media (max-width: 480px) {
