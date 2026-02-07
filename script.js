@@ -66,17 +66,17 @@ const loadLineFile = async (path, state) => {
 };
 
 const initLinePools = () => {
-  loadLineFile(".loading-image", loadingLinesState);
-  loadLineFile(".loaded-image", loadedLinesState);
+  loadLineFile("loading-image.txt", loadingLinesState);
+  loadLineFile("loaded-image.txt", loadedLinesState);
 };
 
 const fetchCatImage = async () => {
   if (!catPhotoImg || !catPhotoCaption) return;
   if (!loadingLinesState.lines.length) {
-    await loadLineFile(".loading-image", loadingLinesState);
+    await loadLineFile("loading-image.txt", loadingLinesState);
   }
   if (!loadedLinesState.lines.length) {
-    await loadLineFile(".loaded-image", loadedLinesState);
+    await loadLineFile("loaded-image.txt", loadedLinesState);
   }
   catPhotoCaption.textContent = nextLine(
     loadingLinesState,
