@@ -80,10 +80,14 @@ h1 {
 .button-row {
   position: relative;
   display: flex;
-  gap: 16px;
+  gap: 28px;
   justify-content: center;
   align-items: center;
-  min-height: 74px;
+  min-height: 220px;
+  width: 100%;
+
+  padding: 18px; /* ✅ gives No room near edges */
+  box-sizing: border-box;
 }
 
 .btn {
@@ -116,7 +120,8 @@ h1 {
 .btn-no {
   background: #f97316;
   color: white;
-  position: relative;
+  position: absolute;
+  z-index: 20;
   box-shadow: 0 8px 18px rgba(249, 115, 22, 0.35);
   /* smoother teleport */
   transition:
@@ -136,6 +141,32 @@ h1 {
   margin: 10px 0 0;
   font-size: 0.9rem;
   color: #6b7280;
+}
+
+.cat-photo {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.cat-photo img {
+  width: min(100%, 360px);
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+  display: none;
+}
+
+.cat-photo-caption {
+  font-size: 0.9rem;
+  color: #374151;
+  min-height: 18px;
+}
+
+.modal-photo {
+  margin-top: 10px;
 }
 
 /* Floating background decor */
@@ -242,3 +273,4 @@ h1 {
     height: 210px;
   }
 }
+
