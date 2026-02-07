@@ -26,9 +26,54 @@ const CAT_API_KEY_B64 =
 
 const decodeCatApiKey = () => atob(CAT_API_KEY_B64);
 
+const loadingLinesState = { lines: [], order: [], idx: 0 };
+const loadedLinesState = { lines: [], order: [], idx: 0 };
+
+const shuffle = (arr) => {
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+const nextLine = (state, fallback) => {
+  if (!state.lines.length) return fallback;
+  if (!state.order.length || state.idx >= state.order.length) {
+    state.order = shuffle([...state.lines]);
+    state.idx = 0;
+  }
+  const line = state.order[state.idx];
+  state.idx += 1;
+  return line;
+};
+
+const loadLineFile = async (path, state) => {
+  try {
+    const res = await fetch(path, { cache: "no-cache" });
+    if (!res.ok) return;
+    const text = await res.text();
+    const lines = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    state.lines = lines;
+  } catch {
+    // Ignore and use fallbacks.
+  }
+};
+
+const initLinePools = () => {
+  loadLineFile(".loading-image", loadingLinesState);
+  loadLineFile(".loaded-image", loadedLinesState);
+};
+
 const fetchCatImage = async () => {
   if (!catPhotoImg || !catPhotoCaption) return;
-  catPhotoCaption.textContent = "Fetching a cat...";
+  catPhotoCaption.textContent = nextLine(
+    loadingLinesState,
+    "Fetching a cat..."
+  );
   catPhotoImg.style.display = "none";
   try {
     const res = await fetch(CAT_API_URL, {
@@ -38,9 +83,18 @@ const fetchCatImage = async () => {
     const data = await res.json();
     const url = data && data[0] && data[0].url;
     if (!url) throw new Error("No image returned");
+    catPhotoImg.onload = () => {
+      catPhotoImg.style.display = "block";
+      catPhotoCaption.textContent = nextLine(
+        loadedLinesState,
+        "Good choice, here is a cat to approve it !!"
+      );
+    };
+    catPhotoImg.onerror = () => {
+      catPhotoCaption.textContent =
+        "Cat delivery failed. Try clicking Yes again.";
+    };
     catPhotoImg.src = url;
-    catPhotoImg.style.display = "block";
-    catPhotoCaption.textContent = "Good choice, here is a cat to approve it !!";
   } catch (err) {
     catPhotoCaption.textContent =
       "Cat delivery failed. Try clicking Yes again.";
@@ -408,3 +462,4 @@ document.addEventListener("keydown", (e) => {
 
 // Start with No somewhere random so it doesn’t sit on top of Yes
 moveNoButton();
+
