@@ -51,15 +51,17 @@ const nextLine = (state, fallback) => {
 const loadLineFile = async (path, state) => {
   try {
     const res = await fetch(path, { cache: "no-cache" });
-    if (!res.ok) return;
+    if (!res.ok) return [];
     const text = await res.text();
     const lines = text
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
     state.lines = lines;
+    return lines;
   } catch {
     // Ignore and use fallbacks.
+    return [];
   }
 };
 
@@ -70,9 +72,15 @@ const initLinePools = () => {
 
 const fetchCatImage = async () => {
   if (!catPhotoImg || !catPhotoCaption) return;
+  if (!loadingLinesState.lines.length) {
+    await loadLineFile(".loading-image", loadingLinesState);
+  }
+  if (!loadedLinesState.lines.length) {
+    await loadLineFile(".loaded-image", loadedLinesState);
+  }
   catPhotoCaption.textContent = nextLine(
     loadingLinesState,
-    "Fetching a cat..."
+    "Fetching a cat...",
   );
   catPhotoImg.style.display = "none";
   try {
@@ -87,7 +95,7 @@ const fetchCatImage = async () => {
       catPhotoImg.style.display = "block";
       catPhotoCaption.textContent = nextLine(
         loadedLinesState,
-        "Good choice, here is a cat to approve it !!"
+        "Good choice, here is a cat to approve it !!",
       );
     };
     catPhotoImg.onerror = () => {
@@ -248,25 +256,13 @@ const placeNoSafely = (targetX, targetY) => {
 // Keep the old API name so rest of code still works
 const moveNoButton = (event) => {
   const noRect = noButton.getBoundingClientRect();
-  const yesRect = yesButton.getBoundingClientRect();
-
   const noW = noRect.width;
   const noH = noRect.height;
-
-  // Yes exclusion zone = 3x size around the Yes button (viewport coords)
-  const yesCenterX = yesRect.left + yesRect.width / 2;
-  const yesCenterY = yesRect.top + yesRect.height / 2;
-
-  const yesZone = {
-    x: yesCenterX - (yesRect.width * YES_EXCLUSION_SCALE) / 2,
-    y: yesCenterY - (yesRect.height * YES_EXCLUSION_SCALE) / 2,
-    w: yesRect.width * YES_EXCLUSION_SCALE,
-    h: yesRect.height * YES_EXCLUSION_SCALE,
-  };
 
   const bounds = getCardBounds(noW, noH);
   const maxX = bounds.maxX;
   const maxY = bounds.maxY;
+  const yesZone = getYesExclusionRect();
 
   const overlaps = (x, y) => {
     const pad = 14;
@@ -443,7 +439,7 @@ yesButton.addEventListener("click", () => {
   response.textContent = message;
   fetchCatImage();
 
-  modalText.innerHTML = `You have unlocked: <strong>Practice Buddy Mode</strong> 🐾`;
+  modalText.innerHTML = `You have unlocked: <strong>bestie mode</strong> 🐾`;
   openModal();
 });
 
@@ -460,6 +456,9 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && modal.classList.contains("show")) closeModal();
 });
 
+initLinePools();
+
 // Start with No somewhere random so it doesn’t sit on top of Yes
 moveNoButton();
+
 
